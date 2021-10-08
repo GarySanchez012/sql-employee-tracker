@@ -15,6 +15,7 @@ const list = [
       "add a role",
       "add an employee",
       "update an employee role",
+      "exit"
     ],
   },
 ];
@@ -94,22 +95,32 @@ viewDepartments = () => {
       console.table(rows);
     })
     .catch(console.log);
+
+    generalPrompt();
 };
 viewRoles = () => {
   db.promise()
-    .query(`SELECT * FROM role;`)
+    .query(`SELECT role.id, role.title, role.salary, department.name AS department FROM role, department WHERE role.department_id = department.id;`)
     .then(([rows, fields]) => {
       console.table(rows);
     })
     .catch(console.log);
+
+    generalPrompt();
 };
 viewEmployees = () => {
   db.promise()
-    .query(`SELECT * FROM employee;`)
+    .query(`SELECT employees.id, employees.first_name, employees.last_name, role.title, department.name, role.salary, CONCAT_WS(' ', managers.first_name, managers.last_name) as manager_name
+    FROM employee AS employees
+    LEFT JOIN employee AS managers ON employees.manager_id = managers.id
+    INNER JOIN role ON employees.role_id = role.id
+    INNER JOIN department ON role.department_id = department.id;`)
     .then(([rows, fields]) => {
       console.table(rows);
     })
     .catch(console.log);
+
+    generalPrompt();
 };
 addDepartment = () => {
   inquirer.prompt(department).then((answers) => {
@@ -121,7 +132,10 @@ addDepartment = () => {
       )
       .then(() => {
         viewDepartments();
-      });
+      })
+      .catch(err => console.log(err));
+
+      generalPrompt();
   });
 };
 addRole = () => {
@@ -134,7 +148,10 @@ addRole = () => {
       )
       .then(() => {
         viewRoles();
-      });
+      })
+      .catch(err => console.log(err));
+
+      generalPrompt();
   });
 };
 addEmployee = () => {
@@ -151,7 +168,10 @@ addEmployee = () => {
       )
       .then(() => {
         viewEmployees();
-      });
+      })
+      .catch(err => console.log(err));
+
+      generalPrompt();
   });
 };
 updateEmployeeRole = () => {
@@ -164,7 +184,10 @@ updateEmployeeRole = () => {
       )
       .then(() => {
         viewEmployees();
-      });
+      })
+      .catch(err => console.log(err));
+
+      generalPrompt();
   });
 };
 
@@ -193,6 +216,8 @@ const generalPrompt = () => {
       case "update an employee role":
         updateEmployeeRole();
         break;
+      case "exit":
+        process.exit(0);
     }
   });
 };
